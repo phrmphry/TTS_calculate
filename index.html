@@ -1,0 +1,190 @@
+
+<style>
+  .section-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .input-row label { font-size: 14px; color: var(--color-text-secondary); min-width: 210px; }
+  .input-row input[type="number"] { width: 100px; padding: 6px 10px; font-size: 15px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+  .input-row input[type="range"] { flex: 1; }
+  .unit { font-size: 13px; color: var(--color-text-secondary); }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .metric-value { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .metric-value.danger { color: var(--color-text-danger); }
+  .metric-value.success { color: var(--color-text-success); }
+  .fee-breakdown { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; font-size: 13px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .fee-row:last-child { border-bottom: none; }
+  .fee-row.subtotal { font-weight: 500; background: var(--color-background-secondary); }
+  .fee-row.profit { font-weight: 500; font-size: 14px; }
+  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.25rem 0; }
+  .note { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; line-height: 1.5; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
+  .tag-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .tag-ok { background: var(--color-background-success); color: var(--color-text-success); }
+  .highlight { color: var(--color-text-info); font-size: 11px; margin-left: 4px; }
+</style>
+
+<h2 class="sr-only">เครื่องคำนวณราคาขาย TikTok Shop v3</h2>
+
+<div style="padding: 1rem 0;">
+
+  <div style="margin-bottom:1.5rem;">
+    <div class="section-title">ต้นทุนและกำไรที่ต้องการ</div>
+    <div class="input-row">
+      <label>ต้นทุนสินค้า</label>
+      <input type="number" id="cost" value="100" min="1" step="1" oninput="calculate()">
+      <span class="unit">บาท</span>
+    </div>
+    <div class="input-row">
+      <label>กำไรที่ต้องการ</label>
+      <input type="range" id="profit-slider" min="0" max="50" value="10" step="1" oninput="document.getElementById('profit-display').textContent=this.value+'%'; calculate()">
+      <span id="profit-display" style="font-size:14px;font-weight:500;min-width:36px;">10%</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div style="margin-bottom:1.5rem;">
+    <div class="section-title">ค่าส่ง</div>
+    <div class="input-row">
+      <label>ค่าส่งที่ลูกค้าจ่าย</label>
+      <input type="number" id="shipping" value="0" min="0" step="5" oninput="calculate()">
+      <span class="unit">บาท/ออเดอร์</span>
+    </div>
+    <p class="note">ค่าส่งนี้จะถูกนำไปรวมในฐานคำนวณค่าธรรมเนียมการขาย 3.21% และ VAT ด้วย</p>
+  </div>
+
+  <hr class="divider">
+
+  <div style="margin-bottom:1.5rem;">
+    <div class="section-title">ค่าธรรมเนียมแพลตฟอร์ม</div>
+    <div class="input-row">
+      <label>ค่าธรรมเนียมการขาย <span class="highlight">(P + ค่าส่ง)</span></label>
+      <input type="number" id="fee1" value="3.21" min="0" step="0.01" oninput="calculate()">
+      <span class="unit">%</span>
+    </div>
+    <div class="input-row">
+      <label>ค่าคอมมิชชันหมวดหมู่</label>
+      <input type="number" id="fee2" value="7.49" min="0" step="0.01" oninput="calculate()">
+      <span class="unit">%</span>
+    </div>
+    <div class="input-row">
+      <label>ค่าธรรมเนียมสนับสนุนการเติบโต</label>
+      <input type="number" id="fee3" value="8.03" min="0" step="0.01" oninput="calculate()">
+      <span class="unit">%</span>
+    </div>
+    <div class="input-row">
+      <label>ค่าคอมมิชชันนายหน้า</label>
+      <input type="number" id="fee4" value="5.00" min="0" step="0.01" oninput="calculate()">
+      <span class="unit">%</span>
+    </div>
+    <div class="input-row">
+      <label>ค่าโครงสร้างพื้นฐาน</label>
+      <input type="number" id="infra" value="1.07" min="0" step="0.01" oninput="calculate()">
+      <span class="unit">บาท/ออเดอร์</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div style="margin-bottom:1.5rem;">
+    <div class="section-title">ค่าใช้จ่ายอื่น</div>
+    <div class="input-row">
+      <label>% Ads ต่อยอดขายรวมทั้งร้าน</label>
+      <input type="range" id="ads-slider" min="0" max="30" value="15" step="1" oninput="document.getElementById('ads-display').textContent=this.value+'%'; calculate()">
+      <span id="ads-display" style="font-size:14px;font-weight:500;min-width:36px;">15%</span>
+    </div>
+    <p class="note">VAT <span class="highlight">(P + ค่าส่ง)</span> คิดอัตรา 7/107 ≈ 6.54% บนฐานราคาขาย + ค่าส่งที่ลูกค้าจ่าย</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="metric-grid" id="metrics"></div>
+
+  <div class="section-title">รายละเอียดต่อ 1 ออเดอร์</div>
+  <div class="fee-breakdown" id="breakdown"></div>
+
+</div>
+
+<script>
+function calculate() {
+  const cost    = parseFloat(document.getElementById('cost').value) || 0;
+  const targetP = parseFloat(document.getElementById('profit-slider').value) / 100;
+  const ship    = parseFloat(document.getElementById('shipping').value) || 0;
+  const fee1r   = parseFloat(document.getElementById('fee1').value) / 100 || 0; // on P+ship
+  const fee2r   = parseFloat(document.getElementById('fee2').value) / 100 || 0; // on P only
+  const fee3r   = parseFloat(document.getElementById('fee3').value) / 100 || 0; // on P only
+  const fee4r   = parseFloat(document.getElementById('fee4').value) / 100 || 0; // on P only
+  const infra   = parseFloat(document.getElementById('infra').value) || 0;
+  const adsPct  = parseFloat(document.getElementById('ads-slider').value) / 100;
+  const vatR    = 7 / 107; // on P+ship
+
+  // fee1 and VAT are on (P + ship), others on P only
+  // Total cost = cost + fee1*(P+ship) + fee2*P + fee3*P + fee4*P + infra + ads*P + vat*(P+ship)
+  // We want: P - total_cost = targetP * cost
+  // P - [fee1*(P+ship) + (fee2+fee3+fee4+adsPct)*P + vatR*(P+ship) + cost + infra] = targetP * cost
+  // P - (fee1+vatR)*(P+ship) - (fee2+fee3+fee4+adsPct)*P - cost - infra = targetP * cost
+  // P[1 - (fee1+vatR) - (fee2+fee3+fee4+adsPct)] = cost*(1+targetP) + infra + (fee1+vatR)*ship
+  const onPandShip = fee1r + vatR;
+  const onPonly    = fee2r + fee3r + fee4r + adsPct;
+  const denom      = 1 - onPandShip - onPonly;
+
+  const P = (cost * (1 + targetP) + infra + onPandShip * ship) / denom;
+
+  const base = P + ship; // ฐานที่ใช้กับ fee1 และ VAT
+  const fee1amt = base * fee1r;
+  const fee2amt = P * fee2r;
+  const fee3amt = P * fee3r;
+  const fee4amt = P * fee4r;
+  const adsAmt  = P * adsPct;
+  const vatAmt  = base * vatR;
+  const platformTotal = fee1amt + fee2amt + fee3amt + fee4amt + infra;
+  const totalCosts = cost + platformTotal + adsAmt + vatAmt;
+  const netProfit = P - totalCosts;
+  const markup = ((P / cost) - 1) * 100;
+  const margin = (netProfit / P) * 100;
+  const pc = netProfit >= 0 ? 'success' : 'danger';
+
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">ราคาขายที่ต้องตั้ง</div>
+      <div class="metric-value">${P.toFixed(2)} ฿</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Markup จากต้นทุน</div>
+      <div class="metric-value">${markup.toFixed(1)}%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">กำไรสุทธิ/ออเดอร์</div>
+      <div class="metric-value ${pc}">${netProfit.toFixed(2)} ฿</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Net margin</div>
+      <div class="metric-value ${pc}">${margin.toFixed(1)}%</div>
+    </div>
+  `;
+
+  const tag = netProfit >= 0
+    ? '<span class="tag tag-ok">กำไร</span>'
+    : '<span class="tag tag-warn">ขาดทุน</span>';
+
+  const shipNote = ship > 0 ? ` (ฐาน ${base.toFixed(2)} ฿)` : '';
+
+  document.getElementById('breakdown').innerHTML = `
+    <div class="fee-row"><span class="fee-name">ราคาขาย (P)</span><span style="font-weight:500;">${P.toFixed(2)} ฿</span></div>
+    ${ship > 0 ? `<div class="fee-row"><span class="fee-name">ค่าส่งที่ลูกค้าจ่าย</span><span>${ship.toFixed(2)} ฿</span></div>` : ''}
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ต้นทุนสินค้า</span><span style="color:var(--color-text-danger)">−${cost.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่าธรรมเนียมการขาย ${(fee1r*100).toFixed(2)}%${shipNote}</span><span style="color:var(--color-text-danger)">−${fee1amt.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่าคอมมิชชันหมวดหมู่ ${(fee2r*100).toFixed(2)}%</span><span style="color:var(--color-text-danger)">−${fee2amt.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่าธรรมเนียมสนับสนุนการเติบโต ${(fee3r*100).toFixed(2)}%</span><span style="color:var(--color-text-danger)">−${fee3amt.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่าคอมมิชชันนายหน้า ${(fee4r*100).toFixed(2)}%</span><span style="color:var(--color-text-danger)">−${fee4amt.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่าโครงสร้างพื้นฐาน</span><span style="color:var(--color-text-danger)">−${infra.toFixed(2)} ฿</span></div>
+    <div class="fee-row subtotal"><span class="fee-name">รวมค่าธรรมเนียมแพลตฟอร์ม</span><span>−${platformTotal.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) ค่า Ads ${(adsPct*100).toFixed(0)}%</span><span style="color:var(--color-text-danger)">−${adsAmt.toFixed(2)} ฿</span></div>
+    <div class="fee-row"><span class="fee-name" style="color:var(--color-text-danger)">(-) VAT ≈6.54%${shipNote}</span><span style="color:var(--color-text-danger)">−${vatAmt.toFixed(2)} ฿</span></div>
+    <div class="fee-row profit"><span class="fee-name">กำไร ${tag}</span><span style="color:var(--color-text-${pc});font-weight:500;">${netProfit.toFixed(2)} ฿</span></div>
+  `;
+}
+calculate();
+</script>
